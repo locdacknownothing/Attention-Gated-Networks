@@ -188,6 +188,29 @@ class UnetGatingSignal3(nn.Module):
         return outputs
 
 
+class UnetGridGatingSignal2(nn.Module):
+    def __init__(self, in_size, out_size, kernel_size=(1,1), is_batchnorm=True):
+        super(UnetGridGatingSignal2, self).__init__()
+
+        if is_batchnorm:
+            self.conv1 = nn.Sequential(nn.Conv2d(in_size, out_size, kernel_size, (1,1), (0,0)),
+                                       nn.BatchNorm2d(out_size),
+                                       nn.ReLU(inplace=True),
+                                       )
+        else:
+            self.conv1 = nn.Sequential(nn.Conv2d(in_size, out_size, kernel_size, (1,1), (0,0)),
+                                       nn.ReLU(inplace=True),
+                                       )
+
+        # initialise the blocks
+        for m in self.children():
+            init_weights(m, init_type='kaiming')
+
+    def forward(self, inputs):
+        outputs = self.conv1(inputs)
+        return outputs
+
+
 class UnetGridGatingSignal3(nn.Module):
     def __init__(self, in_size, out_size, kernel_size=(1,1,1), is_batchnorm=True):
         super(UnetGridGatingSignal3, self).__init__()
@@ -212,13 +235,14 @@ class UnetGridGatingSignal3(nn.Module):
 
 
 class unetUp(nn.Module):
-    def __init__(self, in_size, out_size, is_deconv):
+    def __init__(self, in_size, out_size, is_deconv, is_batchnorm=True):
         super(unetUp, self).__init__()
-        self.conv = unetConv2(in_size, out_size, False)
         if is_deconv:
+            self.conv = unetConv2(in_size, out_size, is_batchnorm)
             self.up = nn.ConvTranspose2d(in_size, out_size, kernel_size=4, stride=2, padding=1)
         else:
-            self.up = nn.UpsamplingBilinear2d(scale_factor=2)
+            self.conv = unetConv2(in_size + out_size, out_size, is_batchnorm)
+            self.up = nn.Upsample(scale_factor=2, mode='bilinear')
 
         # initialise the blocks
         for m in self.children():
