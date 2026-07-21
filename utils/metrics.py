@@ -2,7 +2,6 @@
 # https://github.com/wkentaro/pytorch-fcn/blob/master/torchfcn/utils.py
 
 import numpy as np
-import cv2
 
 def _fast_hist(label_true, label_pred, n_class):
     mask = (label_true >= 0) & (label_true < n_class)
@@ -93,6 +92,7 @@ def precision_and_recall(label_gt, label_pred, n_class):
 
 
 def distance_metric(seg_A, seg_B, dx, k):
+    import cv2
     """
         Measure the distance errors between the contours of two segmentations.
         The manual contours are drawn on 2D slices.

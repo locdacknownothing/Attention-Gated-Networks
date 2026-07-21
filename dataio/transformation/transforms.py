@@ -29,6 +29,7 @@ class Transformations:
             'test_sax': self.test_3d_sax_transform,
             'acdc_sax': self.cmr_3d_sax_transform,
             'us':       self.ultrasound_transform,
+            'stare':    self.stare_transform,
         }[self.name]()
 
     def print(self):
@@ -157,6 +158,21 @@ class Transformations:
                                       ts.AddChannel(axis=0),
                                       ts.SpecialCrop(self.patch_size,0),
                                       ts.StdNormalize(),
+                                ])
+
+        return {'train': train_transform, 'valid': valid_transform}
+
+    def stare_transform(self):
+
+        train_transform = ts.Compose([ts.RandomFlip(h=True, v=True, p=self.random_flip_prob),
+                                      ts.RandomAffine(rotation_range=self.rotate_val, translation_range=self.shift_val,
+                                                      zoom_range=self.scale_val, interp=('bilinear', 'nearest')),
+                                      ts.NormalizeMedicPercentile(norm_flag=(True, False)),
+                                      ts.TypeCast(['float', 'long'])
+                                ])
+
+        valid_transform = ts.Compose([ts.NormalizeMedicPercentile(norm_flag=(True, False)),
+                                      ts.TypeCast(['float', 'long'])
                                 ])
 
         return {'train': train_transform, 'valid': valid_transform}

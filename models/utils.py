@@ -7,7 +7,6 @@ import numpy as np
 import torch.optim as optim
 from torch.nn import CrossEntropyLoss
 from utils.metrics import segmentation_scores, dice_score_list
-from sklearn import metrics
 from .layers.loss import *
 
 def get_optimizer(option, params):
@@ -89,6 +88,7 @@ def segmentation_stats(pred_seg, target):
 
 
 def classification_scores(gts, preds, labels):
+    from sklearn import metrics
     accuracy        = metrics.accuracy_score(gts,  preds)
     class_accuracies = []
     for lab in labels: # TODO Fix
