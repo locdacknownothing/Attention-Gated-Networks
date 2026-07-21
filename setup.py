@@ -23,10 +23,7 @@ setup(name='AttentionGatedNetworks',
         "h5py",
         "pandas",
         "dominate",
-        'torchsample==0.1.3',
-      ],
-      dependency_links=[
-          'https://github.com/ozan-oktay/torchsample/tarball/master#egg=torchsample-0.1.3'
+        'torchsample @ git+https://github.com/ozan-oktay/torchsample.git',
       ],
       packages=find_packages(exclude=('tests', 'docs'))
 )
