@@ -6,6 +6,8 @@ from dataio.loader.hms_dataset import HMSDataset
 from dataio.loader.cmr_3D_dataset import CMR3DDataset
 from dataio.loader.us_dataset import UltraSoundDataset
 from dataio.loader.stare_dataset import STAREDataset
+from dataio.loader.drive_dataset import DRIVEDataset
+from dataio.loader.chase_dataset import CHASEDataset
 
 
 def get_dataset(name):
@@ -20,7 +22,9 @@ def get_dataset(name):
         'hms_sax':  HMSDataset,
         'test_sax': TestDataset,
         'us': UltraSoundDataset,
-        'stare': STAREDataset
+        'stare': STAREDataset,
+        'drive': DRIVEDataset,
+        'chase': CHASEDataset
     }[name]
 
 

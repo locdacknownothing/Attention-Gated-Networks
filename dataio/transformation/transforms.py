@@ -30,6 +30,8 @@ class Transformations:
             'acdc_sax': self.cmr_3d_sax_transform,
             'us':       self.ultrasound_transform,
             'stare':    self.stare_transform,
+            'drive':    self.stare_transform,
+            'chase':    self.stare_transform,
         }[self.name]()
 
     def print(self):
