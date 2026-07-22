@@ -60,8 +60,11 @@ def validate(json_name):
         #                                              'hd_MYO': hd
         #                                               })
 
-        input_arr, label_arr = data[0], data[1]
-        output_arr = model.pred_seg.byte()
+        input_arr, label_arr = model.input, model.target
+        output_arr = model.pred_seg
+
+        # print(input_arr.shape, label_arr.shape, model.pred_seg.shape, model.prediction.shape)
+        
         scores, _ = eval_seg(output_arr, label_arr, threshold=(0.5,))
         score_keys = ['IOU', 'DICE', 'ACC', 'SEN', 'SPE', 'AUC', 'MCC', 'F1', 'JACC']
         
