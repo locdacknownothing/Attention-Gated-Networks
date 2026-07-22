@@ -3,6 +3,11 @@ import pandas as pd
 import os
 import ntpath
 import time
+
+import torch
+import torchvision
+import torchvision.utils as vutils
+
 from utils import util, html
 
 # Use the following comment to launch a visdom server
@@ -196,3 +201,67 @@ class Visualiser():
             txts.append(label)
             links.append(image_name)
         webpage.add_images(ims, txts, links, width=self.win_size)
+
+
+def vis_image(imgs, pred_masks, gt_masks, save_path, reverse = False, points = None, boxes = None):
+    
+    b,c,h,w = pred_masks.size()
+    dev = pred_masks.get_device()
+    row_num = min(b, 4)
+
+    if torch.max(pred_masks) > 1 or torch.min(pred_masks) < 0:
+        pred_masks = torch.sigmoid(pred_masks)
+
+    if reverse == True:
+        pred_masks = 1 - pred_masks
+        gt_masks = 1 - gt_masks
+    else:
+        pred_masks = pred_masks.clone()
+        gt_masks = gt_masks.clone()
+    if c == 2: # for REFUGE multi mask output
+        pred_disc, pred_cup = pred_masks[:,0,:,:].unsqueeze(1).expand(b,3,h,w), pred_masks[:,1,:,:].unsqueeze(1).expand(b,3,h,w)
+        gt_disc, gt_cup = gt_masks[:,0,:,:].unsqueeze(1).expand(b,3,h,w), gt_masks[:,1,:,:].unsqueeze(1).expand(b,3,h,w)
+        tup = (imgs[:row_num,:,:,:],pred_disc[:row_num,:,:,:], pred_cup[:row_num,:,:,:], gt_disc[:row_num,:,:,:], gt_cup[:row_num,:,:,:])
+        compose = torch.cat(tup, 0)
+        vutils.save_image(compose, fp = save_path, nrow = row_num, padding = 10)
+    elif c > 2: # for multi-class segmentation > 2 classes
+        preds = []
+        gts = []
+        for i in range(0, c):
+            pred = pred_masks[:,i,:,:].unsqueeze(1).expand(b,3,h,w)
+            preds.append(pred)
+            gt = gt_masks[:,i,:,:].unsqueeze(1).expand(b,3,h,w)
+            gts.append(gt)
+        tup = [imgs[:row_num,:,:,:]] + preds + gts
+        compose = torch.cat(tup,0)
+        vutils.save_image(compose, fp = save_path, nrow = row_num, padding = 10)
+    else:
+        imgs = torchvision.transforms.Resize((h,w))(imgs)
+        if imgs.size(1) == 1:
+            imgs = imgs[:,0,:,:].unsqueeze(1).expand(b,3,h,w)
+        pred_masks = pred_masks[:,0,:,:].unsqueeze(1).expand(b,3,h,w)
+        gt_masks = gt_masks[:,0,:,:].unsqueeze(1).expand(b,3,h,w)
+        if points != None:
+            for i in range(b):
+                ps = np.round(points.cpu()/imgs.size(2) * gt_masks.size(2)).to(dtype = torch.int)
+
+                for p in ps[i]:
+                    gt_masks[i,0,p[0]-5:p[0]+5,p[1]-5:p[1]+5] = 0.5
+                    gt_masks[i,1,p[0]-5:p[0]+5,p[1]-5:p[1]+5] = 0.1
+                    gt_masks[i,2,p[0]-5:p[0]+5,p[1]-5:p[1]+5] = 0.4
+        if boxes is not None:
+            for i in range(b):
+                # the next line causes: ValueError: Tensor uint8 expected, got torch.float32
+                # imgs[i, :] = torchvision.utils.draw_bounding_boxes(imgs[i, :], boxes[i])
+                # until TorchVision 0.19 is released (paired with Pytorch 2.4), apply this workaround:
+                img255 = (imgs[i] * 255).byte()
+                img255 = torchvision.utils.draw_bounding_boxes(img255, boxes[i].reshape(-1, 4), colors="red")
+                img01 = img255 / 255
+                # torchvision.utils.save_image(img01, save_path + "_boxes.png")
+                imgs[i, :] = img01
+        tup = (imgs[:row_num,:,:,:],pred_masks[:row_num,:,:,:], gt_masks[:row_num,:,:,:])
+        # compose = torch.cat((imgs[:row_num,:,:,:],pred_disc[:row_num,:,:,:], pred_cup[:row_num,:,:,:], gt_disc[:row_num,:,:,:], gt_cup[:row_num,:,:,:]),0)
+        compose = torch.cat(tup,0)
+        vutils.save_image(compose, fp = save_path, nrow = row_num, padding = 10)
+
+    return

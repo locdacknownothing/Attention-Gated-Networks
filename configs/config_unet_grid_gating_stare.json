@@ -10,7 +10,7 @@
   },
   "visualisation": {
     "display_port": 8099,
-    "no_html": false,
+    "no_html": true,
     "display_winsize": 256,
     "display_id": 0,
     "display_single_pane_ncols": 0
@@ -20,13 +20,28 @@
   },
   "augmentation": {
     "stare": {
-      "shift": [0.1, 0.1],
+      "shift": [
+        0.1,
+        0.1
+      ],
       "rotate": 15.0,
-      "scale": [0.9, 1.1],
-      "intensity": [1.0, 1.0],
+      "scale": [
+        0.9,
+        1.1
+      ],
+      "intensity": [
+        1.0,
+        1.0
+      ],
       "random_flip_prob": 0.5,
-      "scale_size": [704, 704],
-      "patch_size": [704, 704]
+      "scale_size": [
+        704,
+        704
+      ],
+      "patch_size": [
+        704,
+        704
+      ]
     }
   },
   "model": {
@@ -37,13 +52,15 @@
     "tensor_dim": "2D",
     "division_factor": 16,
     "input_nc": 3,
-    "output_nc": 2,
+    "output_nc": 1,
     "lr_rate": 1e-4,
     "l2_reg_weight": 1e-6,
     "feature_scale": 4,
-    "gpu_ids": [0],
+    "gpu_ids": [
+      0
+    ],
     "isTrain": true,
-    "checkpoints_dir": "./checkpoints",
+    "checkpoints_dir": "./checkpoints1",
     "experiment_name": "experiment_unet_grid_gating_stare",
     "criterion": "dice_loss"
   }
