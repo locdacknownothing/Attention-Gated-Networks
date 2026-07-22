@@ -49,6 +49,7 @@ def train(arguments):
     error_logger = ErrorLogger()
 
     # Training Function
+    best_mean_iou = 0.0
     model.set_scheduler(train_opts)
     for epoch in range(model.which_epoch, train_opts.n_epochs):
         print('(epoch: %d, total # iters: %d)' % (epoch, len(train_loader)))
@@ -85,6 +86,15 @@ def train(arguments):
         for split in ['train', 'validation', 'test']:
             visualizer.plot_current_errors(epoch, error_logger.get_errors(split), split_name=split)
             visualizer.print_current_errors(epoch, error_logger.get_errors(split), split_name=split)
+
+        # Save best model based on validation Mean_IOU
+        val_errors = error_logger.get_errors('validation')
+        val_mean_iou = val_errors.get('Mean_IOU', 0.0)
+        if val_mean_iou > best_mean_iou:
+            best_mean_iou = val_mean_iou
+            model.save_best()
+            print('>>> Best model saved at epoch %d with Mean_IOU: %.4f' % (epoch, best_mean_iou))
+
         error_logger.reset()
 
         # Save the model parameters

@@ -154,3 +154,6 @@ class FeedForwardSegmentation(BaseModel):
 
     def save(self, epoch_label):
         self.save_network(self.net, 'S', epoch_label, self.gpu_ids)
+
+    def save_best(self):
+        self.save_best_network(self.net, 'S', self.gpu_ids)

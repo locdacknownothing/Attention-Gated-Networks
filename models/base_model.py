@@ -67,6 +67,14 @@ class BaseModel():
         if len(gpu_ids) and torch.cuda.is_available():
             network.cuda(gpu_ids[0])
 
+    def save_best_network(self, network, network_label, gpu_ids):
+        print('Saving the best model {0}'.format(network_label))
+        save_filename = 'best_net_{0}.pth'.format(network_label)
+        save_path = os.path.join(self.save_dir, save_filename)
+        torch.save(network.cpu().state_dict(), save_path)
+        if len(gpu_ids) and torch.cuda.is_available():
+            network.cuda(gpu_ids[0])
+
     # helper loading function that can be used by subclasses
     def load_network(self, network, network_label, epoch_label):
         print('Loading the model {0} - epoch {1}'.format(network_label, epoch_label))
