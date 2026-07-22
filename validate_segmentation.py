@@ -42,9 +42,9 @@ def validate(json_name):
         model.set_input(data[0], data[1])
         model.test()
 
-        input_arr  = np.squeeze(data[0].cpu().numpy()).astype(np.float32)
-        label_arr  = np.squeeze(data[1].cpu().numpy()).astype(np.int16)
-        output_arr = np.squeeze(model.pred_seg.cpu().byte().numpy()).astype(np.int16)
+        # input_arr  = np.squeeze(data[0].cpu().numpy()).astype(np.float32)
+        # label_arr  = np.squeeze(data[1].cpu().numpy()).astype(np.int16)
+        # output_arr = np.squeeze(model.pred_seg.cpu().byte().numpy()).astype(np.int16)
 
         # If there is a label image - compute statistics
         # dice_vals = dice_score(label_arr, output_arr, n_class=int(4))
@@ -60,6 +60,8 @@ def validate(json_name):
         #                                              'hd_MYO': hd
         #                                               })
 
+        input_arr, label_arr = data[0], data[1]
+        output_arr = model.pred_seg.byte()
         scores, _ = eval_seg(output_arr, label_arr, threshold=(0.5,))
         score_keys = ['IOU', 'DICE', 'ACC', 'SEN', 'SPE', 'AUC', 'MCC', 'F1', 'JACC']
         
@@ -85,9 +87,16 @@ def validate(json_name):
         # sitk.WriteImage(label_img, os.path.join(save_directory,'{}_lbl.nii.gz'.format(iteration)))
         # sitk.WriteImage(predi_img, os.path.join(save_directory,'{}_pred.nii.gz'.format(iteration)))
 
-    stat_logger.statlogger2csv(split='test', out_csv_name=os.path.join(save_directory,'stats.csv'))
-    for key, (mean_val, std_val) in stat_logger.get_errors(split='test').items():
-        print('-',key,': \t{0:.3f}+-{1:.3f}'.format(mean_val, std_val),'-')
+    stat_logger.statlogger2csv(split='test', out_csv_name=os.path.join(save_directory, 'stats.csv'))
+    
+    metric_log_path = os.path.join(save_directory, 'metric_log.txt')
+    with open(metric_log_path, 'a') as log_file:
+        log_file.write('=== Validation Metrics ===\n')
+        for key, (mean_val, std_val) in stat_logger.get_errors(split='test').items():
+            msg = '- {0} : \t{1:.4f}+-{2:.4f} -'.format(key, mean_val, std_val)
+            print(msg)
+            log_file.write(msg + '\n')
+        log_file.write('\n')
 
 
 if __name__ == '__main__':

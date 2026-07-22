@@ -57,11 +57,11 @@ class StatMeter(object):
         self.img_names.append(img_name)
 
     def return_average(self):
-        values_array = np.array(self.vals, dtype=np.float)
+        values_array = np.array(self.vals, dtype=float)
         return np.nanmean(values_array)
 
     def return_std(self):
-        values_array = np.array(self.vals, dtype=np.float)
+        values_array = np.array(self.vals, dtype=float)
         return np.nanstd(values_array)
 
 
